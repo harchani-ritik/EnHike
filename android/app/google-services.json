@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "198436160506",
+    "firebase_url": "https://beacon-flutter.firebaseio.com",
+    "project_id": "beacon-flutter",
+    "storage_bucket": "beacon-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198436160506:android:b1eafadc010173c56e5a43",
+        "android_client_info": {
+          "package_name": "com.harchani.beacon_share"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198436160506-kb17nr9pu67a6j3bqs2kb1vu8efhnmn3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.harchani.beacon_share",
+            "certificate_hash": "8d4b1441dc0b930f255306533481dc90df86867a"
+          }
+        },
+        {
+          "client_id": "198436160506-ej1bc1ponf4agjmmaon09aaqtbb9k0sc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB13R5MMsSC-FcKrbZ5EEDG1GnMaD2YPPY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "198436160506-ej1bc1ponf4agjmmaon09aaqtbb9k0sc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
