@@ -35,7 +35,7 @@ class _HikeScreenState extends State<HikeScreen> {
   String _hikerName;
   String _linkMessage;
   String _expiringAt;
-  bool _isGeneratingLink = false, _isReferred;
+  bool _isGeneratingLink = false, _isReferred,isBeaconExpired=false;
   List<String> hikers = [];
   Duration _newDuration = Duration(seconds: 0);
 
@@ -43,6 +43,18 @@ class _HikeScreenState extends State<HikeScreen> {
   CameraPosition _kBeaconPosition =
       CameraPosition(target: LatLng(25.3161907, 82.9890129), zoom: 12.0);
 
+  void beaconExpired(){
+    _firestore.collection('hikes').document(widget._passkey).delete();
+    Fluttertoast.showToast(msg: 'Beacon Expired');
+    setState(() {
+      _lat=_long=0.0;
+    });
+  }
+  startCountdown(){
+    Future.delayed(DateTime.fromMillisecondsSinceEpoch(int.parse(_expiringAt)).difference(DateTime.now()),(){
+      beaconExpired();
+    });
+  }
   fetchHikersData() async {
     _isReferred = widget.isReferred;
     _hikerName = widget.hikerName;
@@ -52,9 +64,16 @@ class _HikeScreenState extends State<HikeScreen> {
           .document(widget._passkey)
           .snapshots()) {
         List<String> newHikers = [];
+
+        if(!snapshot.exists){
+          beaconExpired();
+        }
         _numberOfHikers = snapshot.data['numberOfHikers'];
+        String olderDuration = _expiringAt;
         _expiringAt = snapshot.data['expiringAt'];
-        
+        if(_expiringAt!=olderDuration){
+          startCountdown();
+        }
         for (int i = 0; i < _numberOfHikers; i++) {
           newHikers.add(snapshot.data['hiker$i']);
         }
@@ -76,6 +95,10 @@ class _HikeScreenState extends State<HikeScreen> {
         }
       }
     } catch (e) {
+      beaconExpired();
+      setState(() {
+        isBeaconExpired = true;
+      });
       print('InvalidPasskeyException: $e');
     }
   }
@@ -208,7 +231,7 @@ class _HikeScreenState extends State<HikeScreen> {
                                   text: TextSpan(
                                     style: TextStyle(fontWeight: FontWeight.bold),
                                     children: [
-                                      TextSpan(text: 'Beacon expiring at ${_expiringAt==null?'<Fetching data>':DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(int.parse(_expiringAt))).toString()}\n',style: TextStyle(fontSize: 16)),
+                                      TextSpan(text: isBeaconExpired?'Beacon Expired - Please Exit\n':'Beacon expiring at ${_expiringAt==null?'<Fetching data>':DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(int.parse(_expiringAt))).toString()}\n',style: TextStyle(fontSize: 16)),
                                       TextSpan(text: 'Beacon holder at: ${_lat.toStringAsFixed(4)}, ${_long.toStringAsFixed(4)}\n',style: TextStyle(fontSize: 14)),
                                       TextSpan(text: 'Long press on any hiker to hand over the beacon\n',style: TextStyle(fontSize: 12)),
                                       TextSpan(text: 'Double Tap on beacon to change the duration\n',style: TextStyle(fontSize: 12)),
@@ -234,7 +257,7 @@ class _HikeScreenState extends State<HikeScreen> {
                                       },
                                       child: ListTile(
                                         leading: CircleAvatar(
-                                          backgroundColor: kYellow,
+                                          backgroundColor: isBeaconExpired?Colors.grey:kYellow,
                                           radius: 18,
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(50),
@@ -303,7 +326,7 @@ class _HikeScreenState extends State<HikeScreen> {
                                           },
                                           child: Icon(
                                             Icons.room,
-                                            color: kYellow,
+                                            color: isBeaconExpired?Colors.grey:kYellow,
                                             size: 40,
                                       ),
                                         ):Container(width: 10,),

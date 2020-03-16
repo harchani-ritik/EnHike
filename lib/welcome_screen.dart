@@ -173,7 +173,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                                       print(_duration);
                                                     });
                                                   },
-                                                  snapToMins: 5.0,
+                                                  snapToMins: 1.0,
                                                 ))
                                           ],
                                         ),
