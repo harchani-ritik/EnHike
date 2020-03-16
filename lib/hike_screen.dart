@@ -8,6 +8,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_duration_picker/flutter_duration_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -36,6 +37,7 @@ class _HikeScreenState extends State<HikeScreen> {
   String _expiringAt;
   bool _isGeneratingLink = false, _isReferred;
   List<String> hikers = [];
+  Duration _newDuration = Duration(seconds: 0);
 
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition _kBeaconPosition =
@@ -49,14 +51,13 @@ class _HikeScreenState extends State<HikeScreen> {
           .collection('hikes')
           .document(widget._passkey)
           .snapshots()) {
-        print(snapshot.data);
         List<String> newHikers = [];
         _numberOfHikers = snapshot.data['numberOfHikers'];
         _expiringAt = snapshot.data['expiringAt'];
+        
         for (int i = 0; i < _numberOfHikers; i++) {
           newHikers.add(snapshot.data['hiker$i']);
         }
-        print('New hikers are ${newHikers.length}');
         setState(() {
           _lat = snapshot.data['lat'] ?? 0.0;
           _long = snapshot.data['long'] ?? 0.0;
@@ -64,8 +65,6 @@ class _HikeScreenState extends State<HikeScreen> {
         setState(() {
           hikers = newHikers;
         });
-
-        print('There are ${hikers.length} hikers in this room');
         if (hikers[0] == _hikerName) {
           Location location = Location();
           await location.getCurrentLocation();
@@ -89,6 +88,7 @@ class _HikeScreenState extends State<HikeScreen> {
     super.initState();
     fetchHikersData();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +210,8 @@ class _HikeScreenState extends State<HikeScreen> {
                                     children: [
                                       TextSpan(text: 'Beacon expiring at ${_expiringAt==null?'<Fetching data>':DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(int.parse(_expiringAt))).toString()}\n',style: TextStyle(fontSize: 16)),
                                       TextSpan(text: 'Beacon holder at: ${_lat.toStringAsFixed(4)}, ${_long.toStringAsFixed(4)}\n',style: TextStyle(fontSize: 14)),
-                                      TextSpan(text: '\nLong press on any hiker to hand over the beacon\n',style: TextStyle(fontSize: 12)),
+                                      TextSpan(text: 'Long press on any hiker to hand over the beacon\n',style: TextStyle(fontSize: 12)),
+                                      TextSpan(text: 'Double Tap on beacon to change the duration\n',style: TextStyle(fontSize: 12)),
                                     ]
                                   ),
                                 ),
@@ -241,11 +242,71 @@ class _HikeScreenState extends State<HikeScreen> {
                                         ),
                                         title: Text(hikers[index],style: TextStyle(color: Colors.black,fontSize: 18),
                                         ),
-                                        trailing: index==0?Icon(
-                                          Icons.room,
-                                          color: kYellow,
-                                          size: 40,
-                                      ):Container(width: 10,),
+                                        trailing: index==0?GestureDetector(
+                                          onDoubleTap: (){
+                                            hikers[0]!=_hikerName?Fluttertoast.showToast(msg: 'Only beacon holder has access to change the duration'):
+                                            showDialog(context: context,
+                                                builder: (context)=> Dialog(
+                                                  child: Container(
+                                                    height: 500,
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 32,vertical: 16),
+                                                      child: Column(
+                                                        children: <Widget>[
+                                                          Flexible(
+                                                            child: Container(
+                                                              color: kLightBlue,
+                                                              child: Column(
+                                                                children: <Widget>[
+                                                                  Text('Change Beacon Duration',style: TextStyle(color: kYellow,fontSize: 12),),
+                                                                  Expanded(
+                                                                      flex: 8,
+                                                                      // Use it from the context of a stateful widget, passing in
+                                                                      // and saving the duration as a state variable.
+                                                                      child: DurationPicker(
+                                                                        height: 100,
+                                                                        width: double.infinity,
+                                                                        duration: _newDuration,
+                                                                        onChange: (val) {
+                                                                          setState(() {
+                                                                            _newDuration=val;
+                                                                            print(_newDuration);
+                                                                          });
+                                                                        },
+                                                                        snapToMins: 5.0,
+                                                                      ))
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 30,),
+                                                          Flexible(
+                                                            child: HikeButton(
+                                                                buttonWidth: 48,
+                                                                text: 'Done',
+                                                                textColor: Colors.white,
+                                                                buttonColor: kYellow,
+                                                                onTap: (){
+                                                                  DateTime newTime = DateTime.now().add(_newDuration);
+                                                                  _firestore.collection('hikes').document(widget._passkey).updateData({
+                                                                    'expiringAt': newTime.millisecondsSinceEpoch.toString(),
+                                                                  });
+                                                                  Navigator.pop(context);
+                                                                }
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ));
+                                          },
+                                          child: Icon(
+                                            Icons.room,
+                                            color: kYellow,
+                                            size: 40,
+                                      ),
+                                        ):Container(width: 10,),
                                       ),
                                     ),
                                   );

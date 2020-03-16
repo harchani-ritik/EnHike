@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_duration_picker/flutter_duration_picker.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
@@ -22,6 +23,7 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   bool isCreatingHikeRoom=false;
   String _hikerName; DateTime selectedTime=DateTime.now().subtract(Duration(hours: 1));
+  Duration _duration = Duration(hours: 0,minutes: 0);
 
   void initDynamicLinks() async {
     final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
@@ -129,7 +131,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       showDialog(context: context,
                           builder: (context)=> Dialog(
                             child: Container(
-                              height: 400,
+                              height: 500,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 32,vertical: 16),
                                 child: Column(
@@ -156,18 +158,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                         color: kLightBlue,
                                         child: Column(
                                           children: <Widget>[
-                                            Text('Select Beacon Expiration Time',style: TextStyle(color: kYellow,fontSize: 12),),
+                                            Text('Select Beacon Duration',style: TextStyle(color: kYellow,fontSize: 12),),
                                             Expanded(
-                                              child: TimePickerSpinner(
-                                                highlightedTextStyle: TextStyle(fontSize: 18),
-                                                normalTextStyle: TextStyle(fontSize: 12,color: Colors.grey),
-                                                is24HourMode: false,
-                                                isForce2Digits: true,
-                                                onTimeChange: (time){
-                                                  selectedTime=time;
-                                                },
-                                              ),
-                                            ),
+                                              flex: 5,
+                                              // Use it from the context of a stateful widget, passing in
+                                              // and saving the duration as a state variable.
+                                                child: DurationPicker(
+                                                  height: 100,
+                                                  width: double.infinity,
+                                                  duration: _duration,
+                                                  onChange: (val) {
+                                                    setState(() {
+                                                      _duration=val;
+                                                      print(_duration);
+                                                    });
+                                                  },
+                                                  snapToMins: 5.0,
+                                                ))
                                           ],
                                         ),
                                       ),
@@ -182,7 +189,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                         buttonColor: kYellow,
                                         onTap: (){
                                           Navigator.pop(context);
-                                          !selectedTime.difference(DateTime.now()).isNegative?createHikeRoom():Fluttertoast.showToast(msg: 'Selected Time alredy past');
+                                          selectedTime=DateTime.now().add(_duration);
+                                          createHikeRoom();
                                         }
                                       ),
                                     ),
