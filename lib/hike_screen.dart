@@ -41,7 +41,7 @@ class _HikeScreenState extends State<HikeScreen> {
 
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition _kBeaconPosition =
-      CameraPosition(target: LatLng(25.3161907, 82.9890129), zoom: 12.0);
+      CameraPosition(target: LatLng(_lat, _long), zoom: 12.0);
 
   void beaconExpired(){
     _firestore.collection('hikes').document(widget._passkey).delete();

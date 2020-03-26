@@ -6,12 +6,12 @@ class ShapePainter extends CustomPainter{
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint();
-    // TODO: Set properties to paint
+  
     paint.color= kBlue;
     paint.style= PaintingStyle.fill;
     var path = Path();
 
-    // TODO: Draw your path
+  
     path.moveTo(0, size.height*0.05);
     path.lineTo(size.width *0.11, size.height *0.22);
     path.quadraticBezierTo(size.width *0.13, size.height *0.25,size.width*0.18, size.height * 0.24);
