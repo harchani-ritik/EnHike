@@ -1,13 +1,13 @@
 # EnHike
 
-A convenience application to securely share your live location with your friends.
+### A convenient application to securely share your live location with your friends
 
-App Screenshots
+![](screenshots/ss1.jpg)
 
-![](screenshots/ss1.png)
-
-Sign Up             |  Sign In
+Home Page             |  Create Hike | 
 :-------------------------:|:-------------------------:
-![](screenshots/ss2.png)  |  ![](screenshots/ss3.png)
+![](screenshots/ss2.jpeg)  |  ![](screenshots/ss3.jpeg)
 
-![](screenshots/ss4.png)
+**Sharing Location**
+
+![](screenshots/ss4.jpg)
